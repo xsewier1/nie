@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz z czasowników nieregularnych</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    .quiz-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .result {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h2>Quiz: Czasowniki nieregularne (Niemiecki)</h2>
+    <p><strong>Podaj formy czasownika:</strong> <span id="verb"></span></p>
+    <form id="quizForm">
+      <label for="formDu">1. Du (Präsens):</label>
+      <input type="text" id="formDu" required>
+      <label for="formEr">2. Er/Sie/Es (Präsens):</label>
+      <input type="text" id="formEr" required>
+      <label for="form1">3. Präteritum:</label>
+      <input type="text" id="form1" required>
+      <label for="form2">4. Partizip II:</label>
+      <input type="text" id="form2" required>
+      <label for="form3">5. Operator (haben/sein):</label>
+      <input type="text" id="form3" required>
+      <button type="submit">Sprawdź</button>
+      <button type="button" id="nextBtn">Następne</button>
+    </form>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const verbs = [
+      { infinitiv: "sein", du: "bist", er: "ist", prateritum: "war", partizip: "gewesen", operator: "sein", translation: "być" },
+      { infinitiv: "haben", du: "hast", er: "hat", prateritum: "hatte", partizip: "gehabt", operator: "haben", translation: "mieć" },
+      { infinitiv: "werden", du: "wirst", er: "wird", prateritum: "wurde", partizip: "geworden", operator: "sein", translation: "być, stawać się" },
+      { infinitiv: "essen", du: "isst", er: "isst", prateritum: "aß", partizip: "gegessen", operator: "haben", translation: "jeść" },
+      { infinitiv: "geben", du: "gibst", er: "gibt", prateritum: "gab", partizip: "gegeben", operator: "haben", translation: "dawać" },
+      { infinitiv: "kommen", du: "kommst", er: "kommt", prateritum: "kam", partizip: "gekommen", operator: "sein", translation: "przychodzić" },
+      { infinitiv: "gehen", du: "gehst", er: "geht", prateritum: "ging", partizip: "gegangen", operator: "sein", translation: "iść" },
+      { infinitiv: "sehen", du: "siehst", er: "sieht", prateritum: "sah", partizip: "gesehen", operator: "haben", translation: "widzieć" },
+      { infinitiv: "lassen", du: "lässt", er: "lässt", prateritum: "ließ", partizip: "gelassen", operator: "haben", translation: "pozwalać" },
+      { infinitiv: "stehen", du: "stehst", er: "steht", prateritum: "stand", partizip: "gestanden", operator: "haben", translation: "stać" },
+      { infinitiv: "finden", du: "findest", er: "findet", prateritum: "fand", partizip: "gefunden", operator: "haben", translation: "znajdować" },
+      { infinitiv: "bleiben", du: "bleibst", er: "bleibt", prateritum: "blieb", partizip: "geblieben", operator: "sein", translation: "pozostawać" },
+      { infinitiv: "liegen", du: "liegst", er: "liegt", prateritum: "lag", partizip: "gelegen", operator: "haben", translation: "leżeć" },
+      { infinitiv: "heißen", du: "heißt", er: "heißt", prateritum: "hieß", partizip: "geheißen", operator: "haben", translation: "nazywać się" },
+      { infinitiv: "denken", du: "denkst", er: "denkt", prateritum: "dachte", partizip: "gedacht", operator: "haben", translation: "myśleć" },
+      { infinitiv: "nehmen", du: "nimmst", er: "nimmt", prateritum: "nahm", partizip: "genommen", operator: "haben", translation: "brać" },
+      { infinitiv: "tun", du: "tust", er: "tut", prateritum: "tat", partizip: "getan", operator: "haben", translation: "robić" },
+      { infinitiv: "halten", du: "hältst", er: "hält", prateritum: "hielt", partizip: "gehalten", operator: "haben", translation: "trzymać" },
+      { infinitiv: "nennen", du: "nennst", er: "nennt", prateritum: "nannte", partizip: "genannt", operator: "haben", translation: "nazywać" },
+      { infinitiv: "sprechen", du: "sprichst", er: "spricht", prateritum: "sprach", partizip: "gesprochen", operator: "haben", translation: "mówić" },
+      { infinitiv: "bringen", du: "bringst", er: "bringt", prateritum: "brachte", partizip: "gebracht", operator: "haben", translation: "przynosić" },
+      { infinitiv: "fahren", du: "fährst", er: "fährt", prateritum: "fuhr", partizip: "gefahren", operator: "sein", translation: "jechać" },
+      { infinitiv: "kennen", du: "kennst", er: "kennt", prateritum: "kannte", partizip: "gekannt", operator: "haben", translation: "znać" },
+      { infinitiv: "bekommen", du: "bekommst", er: "bekommt", prateritum: "bekam", partizip: "bekommen", operator: "haben", translation: "otrzymywać" },
+      { infinitiv: "beginnen", du: "beginnst", er: "beginnt", prateritum: "begann", partizip: "begonnen", operator: "haben", translation: "rozpoczynać" },
+      { infinitiv: "schreiben", du: "schreibst", er: "schreibt", prateritum: "schrieb", partizip: "geschrieben", operator: "haben", translation: "pisać" },
+      { infinitiv: "laufen", du: "läufst", er: "läuft", prateritum: "lief", partizip: "gelaufen", operator: "sein", translation: "biegać" },
+      { infinitiv: "sitzen", du: "sitzt", er: "sitzt", prateritum: "saß", partizip: "gesessen", operator: "haben", translation: "siedzieć" },
+      { infinitiv: "ziehen", du: "ziehst", er: "zieht", prateritum: "zog", partizip: "gezogen", operator: "haben", translation: "ciągnąć" },
+      { infinitiv: "scheinen", du: "scheinst", er: "scheint", prateritum: "schien", partizip: "geschienen", operator: "haben", translation: "świecić" },
+      { infinitiv: "fallen", du: "fällst", er: "fällt", prateritum: "fiel", partizip: "gefallen", operator: "sein", translation: "upaść" },
+      { infinitiv: "treffen", du: "triffst", er: "trifft", prateritum: "traf", partizip: "getroffen", operator: "haben", translation: "spotkać" },
+      { infinitiv: "tragen", du: "trägst", er: "trägt", prateritum: "trug", partizip: "getragen", operator: "haben", translation: "nosić" },
+      { infinitiv: "gefallen", du: "gefällst", er: "gefällt", prateritum: "gefiel", partizip: "gefallen", operator: "haben", translation: "podobać się" },
+      { infinitiv: "lesen", du: "liest", er: "liest", prateritum: "las", partizip: "gelesen", operator: "haben", translation: "czytać" },
+      { infinitiv: "verlieren", du: "verlierst", er: "verliert", prateritum: "verlor", partizip: "verloren", operator: "haben", translation: "gubić, przegrywać" },
+      { infinitiv: "bitten", du: "bittest", er: "bittet", prateritum: "bat", partizip: "gebeten", operator: "haben", translation: "prosić" },
+      { infinitiv: "betreffen", du: "betriffst", er: "betrifft", prateritum: "betraf", partizip: "betroffen", operator: "haben", translation: "dotyczyć" },
+      { infinitiv: "vergehen", du: "vergehst", er: "vergeht", prateritum: "verging", partizip: "vergangen", operator: "sein", translation: "mijać" },
+      { infinitiv: "helfen", du: "hilfst", er: "hilft", prateritum: "half", partizip: "geholfen", operator: "haben", translation: "pomagać" },
+      { infinitiv: "gewinnen", du: "gewinnst", er: "gewinnt", prateritum: "gewann", partizip: "gewonnen", operator: "haben", translation: "wygrywać" },
+      { infinitiv: "schließen", du: "schließt", er: "schließt", prateritum: "schloss", partizip: "geschlossen", operator: "haben", translation: "zamykać" },
+      { infinitiv: "bieten", du: "bietest", er: "bietet", prateritum: "bot", partizip: "geboten", operator: "haben", translation: "oferować" },
+      { infinitiv: "fliegen", du: "fliegst", er: "fliegt", prateritum: "flog", partizip: "geflogen", operator: "sein", translation: "latać" }
+    ];
+
+    let currentVerb = {};
+
+    function loadVerb() {
+      currentVerb = verbs[Math.floor(Math.random() * verbs.length)];
+      document.getElementById("verb").textContent = `${currentVerb.infinitiv} (${currentVerb.translation})`;
+      document.getElementById("quizForm").reset();
+      document.getElementById("result").textContent = "";
+    }
+
+    document.getElementById("quizForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const du = document.getElementById("formDu").value.trim().toLowerCase();
+      const er = document.getElementById("formEr").value.trim().toLowerCase();
+      const f1 = document.getElementById("form1").value.trim().toLowerCase();
+      const f2 = document.getElementById("form2").value.trim().toLowerCase();
+      const f3 = document.getElementById("form3").value.trim().toLowerCase();
+
+      if (du === currentVerb.du && er === currentVerb.er && f1 === currentVerb.prateritum && f2 === currentVerb.partizip && f3 === currentVerb.operator) {
+        document.getElementById("result").textContent = "✅ Poprawnie!";
+      } else {
+        document.getElementById("result").textContent =
+          `❌ Błąd. Poprawne odpowiedzi: du ${currentVerb.du}, er ${currentVerb.er}, ${currentVerb.prateritum}, ${currentVerb.partizip}, ${currentVerb.operator}`;
+      }
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", function() {
+      loadVerb();
+    });
+
+    loadVerb();
+  </script>
+</body>
+</html>
